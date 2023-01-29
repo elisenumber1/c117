@@ -11,13 +11,21 @@ var drawn_sketch = "";
 var answer_holder = "";
 var score = 0;
 var canvas;
+var classifier;
 
 function draw(){
 	check_sketch();
+
 	if (sketch_name == drawn_sketch) {
 		answer_holder = "set";
 		score++;
 		document.getElementById("score").innerHTML= "Score: " + score; 
+	}
+
+	strokeWeight(13);
+	stroke(0);
+	if(mouseIsPressed){
+		line(pmouseX, pmouseY, mouseX, mouseY);
 	}
 }
 
@@ -50,5 +58,30 @@ function setup(){
   canvas = createCanvas(280, 280);
   canvas.center();
   background("white");
+  canvas.mouseReleased(classifyCanvas);
+
 }
+
+function preload(){
+	classifier = ml5.imageClassifier("DoodleNet");
+}
+
+function classifyCanvas() {
+	classifier.classify(canvas, gotResult);
+}
+
+function gotResult(error, results){
+	if (error) {
+		console.error(error);
+	}
+
+	console.log(results);
+	drawn_sketch = results[0].label;
+
+	document.getElementById("your_sketch").innerHTML="Your Sketch: " + drawn_sketch; 
+	document.getElementById("confidence").innerHTML="Confidence:" + Math.round(results[0].confidence * 100) + "%";
+}
+
+
+
 
